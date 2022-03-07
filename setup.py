@@ -7,8 +7,8 @@ setup(
     description='a lite version of the command wrapper for python',   # Give a short description about your library
     author='esunvoteb',                   # Type in your name
     author_email='esun@voteb.com',      # Type in your E-Mail
-    url='https://github.com/ImagineersHub/pyspinner',   # Provide either the link to your github or to your website
-    download_url='https://github.com/ImagineersHub/pyspinner/archive/v_01.tar.gz',    # I explain this later on
+    url='https://github.com/ImagineersHub/compipe',   # Provide either the link to your github or to your website
+    download_url='https://github.com/ImagineersHub/compipe/archive/v_01.tar.gz',    # I explain this later on
     keywords=['python', 'command', 'commandlet', 'cmd', 'cmdlet'],   # Keywords that define your package best
     install_requires=[            # I get to this in a second
         'requests>=2.27.*',

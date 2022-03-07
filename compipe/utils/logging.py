@@ -6,8 +6,8 @@ from collections import deque
 from enum import IntEnum
 from logging import DEBUG
 
-LOG_FILE_NAME = 'tars.log'
-LOG_FOLDER_NAME = 'spinnner_logs'
+LOG_FILE_NAME = 'current.log'
+LOG_FOLDER_NAME = 'compipe_logs'
 LOG_FILE_PATH = os.path.join(LOG_FOLDER_NAME, LOG_FILE_NAME)
 
 

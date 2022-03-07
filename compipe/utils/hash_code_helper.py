@@ -29,7 +29,7 @@ def md5_string_to_hash(*args, **kwargs):
         kwargs (Dict): key: 'encode' represent encoding standard.
                         Default value: utf-8
     Example:
-        >>>tars md5hash -a "do less shit, do more awesome shit" encode=utf-8
+        >>>compe md5hash -a "do less shit, do more awesome shit" encode=utf-8
     """
     encoding = kwargs['encode'] if hasattr(kwargs, 'encode') else 'utf-8'
     return [hashlib.md5(item.encode(encoding)).hexdigest() for item in args]
@@ -44,7 +44,7 @@ def convert_string_to_base64(*args):
     """Simply convert string to base64.
 
     Example:
-        tars str2b64 -a "hello world"
+        compe str2b64 -a "hello world"
     """
 
     string = base64.b64encode(bytes(args[0], 'utf-8'))

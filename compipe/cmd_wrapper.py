@@ -76,7 +76,7 @@ class CommandWrapper():
 
         if command_inst.command not in command_list:
             raise GErrorCommandNotFound(
-                f'Not Found[{command_inst.command}], use `tars list` to dump the full lists.')
+                f'Not Found[{command_inst.command}], use `compe list` to dump the full lists.')
 
         # validate scope
         user_scopes = get_user_scope(command_inst.user)
@@ -164,7 +164,7 @@ def create_command_payload(args):
     if env.out_of_service:
         TQHelper.post(
             channel=args.get(ARG_CHANNEL, env.dev_channel),
-            payload='TARS is temporary out of service for maintaining!',
+            payload='Compipe is temporary out of service for maintaining!',
             msg_status=MSGStatusCodes.warning)
     else:
         args[ARG_COMMAND] = args[ARG_COMMAND].replace(u'\xa0', u' ')

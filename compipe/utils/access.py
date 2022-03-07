@@ -42,46 +42,48 @@ class AccessHub(metaclass=Singleton):
             logger.debug('Loaded credential from local json dataset')
             self.load_access_from_local()
 
-    def get_server_config(self):
-        # return the resolved server config if the config's been initialized
-        if self.server_config:
-            return self.server_config
+    # def get_server_config(self, config_payload: dict = {}):
+    #     # return the resolved server config if the config's been initialized
+    #     if self.server_config:
+    #         return self.server_config
 
-        # start parsing the config from system env or local json
-        config_txt = self.get_env(SERVER_CONFIG, None)
-        if config_txt:
-            self.server_config = json.loads(config_txt)
-        else:
-            server_config_path = full_path(path='environment.json')
-            self.server_config = json_loader(path=server_config_path).get(platform or 'win32')
+    #     self.server_config.update(config_payload)
 
-        # update executable tool path to system
-        for key, path in self.server_config.get(ARG_EXECUTABLE_TOOLS, {}).items():
-            if not path:
-                logger.debug(f'Executable Tool [{key}] path is invalid!')
-            else:
-                logger.debug(f'Executable Tool [{key}] : added path [{path}] to system env.')
-                os.environ["PATH"] += os.pathsep + path
-                # sys.path.insert(0, path)
+    #     # start parsing the config from system env or local json
+    #     # config_txt = self.get_env(SERVER_CONFIG, None)
+    #     # if config_txt:
+    #     #     self.server_config = json.loads(config_txt)
+    #     # else:
+    #     #     server_config_path = full_path(path='environment.json')
+    #     #     self.server_config = json_loader(path=server_config_path).get(platform or 'win32')
 
-        # update system info
-        self.server_config.update({
-            'os_platform': platform
-        })
+    #     # update executable tool path to system
+    #     for key, path in self.server_config.get(ARG_EXECUTABLE_TOOLS, {}).items():
+    #         if not path:
+    #             logger.debug(f'Executable Tool [{key}] path is invalid!')
+    #         else:
+    #             logger.debug(f'Executable Tool [{key}] : added path [{path}] to system env.')
+    #             os.environ["PATH"] += os.pathsep + path
+    #             # sys.path.insert(0, path)
 
-        # check cuda support
-        # is_cuda_supported = False
-        # try:
-        #     import torch
-        #     is_cuda_supported = True
-        # except ImportError:
-        #     pass
+    #     # update system info
+    #     self.server_config.update({
+    #         'os_platform': platform
+    #     })
 
-        # self.server_config.update({
-        #     'cuda_enabled': is_cuda_supported and torch.cuda.is_available()
-        # })
+    #     # check cuda support
+    #     # is_cuda_supported = False
+    #     # try:
+    #     #     import torch
+    #     #     is_cuda_supported = True
+    #     # except ImportError:
+    #     #     pass
 
-        return self.server_config
+    #     # self.server_config.update({
+    #     #     'cuda_enabled': is_cuda_supported and torch.cuda.is_available()
+    #     # })
+
+    #     return self.server_config
 
     def load_credential_from_env_variable(self):
         # get fernet key

@@ -5,7 +5,7 @@ import random
 import traceback
 from threading import Thread, get_ident
 
-from pyspinner.runtime_env import Environment as env
+from compipe.runtime_env import Environment as env
 
 from ..cmd_enroller import command_list
 from ..exception.task_queue_error import GErrorDuplicateSingletonCMD
@@ -61,7 +61,7 @@ class Task():
 
     @property
     def user(self):
-        return self.kwargs.get(ARG_USER, 'tars')
+        return self.kwargs.get(ARG_USER, 'com')
 
     @property
     def channel(self):
@@ -167,8 +167,8 @@ class TaskQueue(queue.Queue):
         TaskQueue.current_task_count -= 1
 
     def add_task(self, task):
-        # Response greetings, ignore the cmd header when receving from tars
-        if task.user != 'tars' and TaskQueue.current_task_count != 0:
+        # Response greetings, ignore the cmd header when receving from compe
+        if task.user != 'compe' and TaskQueue.current_task_count != 0:
             task.thread_ts = task.response.post(
                 payload=f"Joined in task queue [{TaskQueue.current_task_count}] `{str(task)}`",
                 msg_status=MSGStatusCodes.default)

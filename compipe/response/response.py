@@ -6,7 +6,7 @@ from collections import namedtuple
 from enum import Enum
 
 import requests
-from pyspinner.runtime_env import Environment as env
+from compipe.runtime_env import Environment as env
 
 from ..utils.access import SLACK_APP_KEY, AccessHub
 from ..utils.logging import logger
@@ -130,7 +130,7 @@ class SlackChannel(ResponseChannel):
         print(data.channel)
         print('==========channel')
         payload = SlackChannel.resolve_payload(data)
-        if data.is_error and self.user != 'tars':
+        if data.is_error and self.user != 'com':
             # post to dev channel
             self.upload_large_text_with_snippet(title='Exception: traceback',
                                                 content=data.payload,

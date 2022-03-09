@@ -1,9 +1,11 @@
 
+import os
 from .utils.access import AccessHub
+from .utils.logging import logger
 from .utils.parameters import (ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL,
-                               ARG_MARS_DICOM_DATA_ROOT, ARG_OUT_OF_SERVICE,
-                               ARG_QUEUE_WORKER_NUM, ARG_RESOURCE,
-                               ARG_SUBPROCESS_NUM)
+                               ARG_EXECUTABLE_TOOLS, ARG_MARS_DICOM_DATA_ROOT,
+                               ARG_OUT_OF_SERVICE, ARG_QUEUE_WORKER_NUM,
+                               ARG_RESOURCE, ARG_SUBPROCESS_NUM)
 from .utils.singleton import ThreadSafeSingleton
 
 
@@ -26,7 +28,11 @@ class Environment(metaclass=ThreadSafeSingleton):
         # cloud: IBM cloud runtime env
         # self.update(AccessHub().server_configs)
 
-    @ClassProperty
+    @classmethod
+    def register_credentials(cls, key_dict: dict = {}):
+        AccessHub().keys.update(key_dict)
+
+    @classmethod
     def append_server_config(cls, payload: dict = {}):
         """add customized server config. It could represent some simple parameters and application paths. 
 
@@ -65,6 +71,14 @@ class Environment(metaclass=ThreadSafeSingleton):
         }
         """
         Environment().param.update(payload)
+
+        # add executable application path to sys environment
+        for key, path in Environment().param.get(ARG_EXECUTABLE_TOOLS, {}).items():
+            if not path:
+                logger.debug(f'Executable Tool [{key}] path is invalid!')
+            else:
+                logger.debug(f'Executable Tool [{key}] : added path [{path}] to system env.')
+                os.environ["PATH"] += os.pathsep + path
 
     @ClassProperty
     def console_mode(cls):

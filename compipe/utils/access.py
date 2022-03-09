@@ -1,6 +1,5 @@
 import json
 import os
-from sys import platform
 
 from .hash_code_helper import decrypt_str, encrypt_str
 from .io_helper import full_path, json_loader, json_writer
@@ -11,7 +10,6 @@ from .singleton import Singleton
 SEARCH_PATTERN_PREFIX = ['user-provided', 'savoia_routes']  # FOR VCAP_SERVICES
 
 CREDENTIAL_PATH = full_path(path=os.path.join('utils', 'credentials', 'keys.json'))
-CREDENTIAL_ENCRYPTED_PATH = full_path(path=os.path.join('utils', 'credentials', 'encrypted_keys.json'))
 
 # credential keys ==========================
 GITHUB_TOKEN_KEY = 'github-app-token'
@@ -37,10 +35,10 @@ class AccessHub(metaclass=Singleton):
         self.keys = {}
         self.server_config = {}
 
-        if not self.load_credential_from_env_variable():
-            # try to load credential from local when failing to load env variable from cloud env
-            logger.debug('Loaded credential from local json dataset')
-            self.load_access_from_local()
+        # if not self.load_credential_from_env_variable():
+        #     # try to load credential from local when failing to load env variable from cloud env
+        #     logger.debug('Loaded credential from local json dataset')
+        #     self.load_access_from_local()
 
     # def get_server_config(self, config_payload: dict = {}):
     #     # return the resolved server config if the config's been initialized
@@ -85,14 +83,14 @@ class AccessHub(metaclass=Singleton):
 
     #     return self.server_config
 
-    def load_credential_from_env_variable(self):
-        # get fernet key
-        fernet_key = self.get_env(FERNET_KEY)
-        cipher_text = self.get_env(CIPHER_TEXT)
+    # def load_credential_from_env_variable(self):
+    #     # get fernet key
+    #     fernet_key = self.get_env(FERNET_KEY)
+    #     cipher_text = self.get_env(CIPHER_TEXT)
 
-        self.keys = decrypt_str(fernet_key, cipher_text)
+    #     self.keys = decrypt_str(fernet_key, cipher_text)
 
-        return self.keys != None
+    #     return self.keys != None
 
     def load_access_from_local(self):
         if os.path.exists(CREDENTIAL_PATH):
@@ -103,9 +101,6 @@ class AccessHub(metaclass=Singleton):
     def get_credential(self, key):
         return self.keys.get(key)
 
-    def get_env(self, key, default=None):
-        pass
-
     def to_hash(self, save_local=False):
         key_str = json.dumps(self.keys)
         data = encrypt_str(key_str)
@@ -113,7 +108,7 @@ class AccessHub(metaclass=Singleton):
             self.save_encrypted_keys(data)
         return data
 
-    def save_encrypted_keys(self, data):
+    def save_encrypted_keys(self, data, output):
         """Kep a copy of the encrypted keys, which is used to update in the 
         cloud environment variables.
 
@@ -129,5 +124,5 @@ class AccessHub(metaclass=Singleton):
         data.update({
             SERVER_CONFIG: json.dumps(self.server_config)
         })
-        json_writer(CREDENTIAL_ENCRYPTED_PATH, data)
-        logger.debug('Exported the latest keys to local:{CREDENTIAL_ENCRYPTED_PATH}')
+        json_writer(output, data)
+        logger.debug(f'Exported the latest keys to local:{output}')

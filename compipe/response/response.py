@@ -294,3 +294,11 @@ class SlackChannel(ResponseChannel):
 
         logger.debug(f'upload file to slack! {data.title}')
         return result.json().get('ts')
+
+
+# The other modules could directly parse the channel class
+# from the name via 'eval' function
+response_channel_handlers = {
+    'ConsoleChannel': ConsoleChannel,
+    'SlackChannel': SlackChannel
+}

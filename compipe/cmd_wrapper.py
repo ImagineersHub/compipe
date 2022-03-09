@@ -73,27 +73,28 @@ class CommandWrapper():
 
     @exception_handler
     def run_command(self, command_inst: Command):
+        """TODO: implement the command scope protection. Users will not 
+        be able to access some specific command without granted access 
+
+        Args:
+            command_inst (Command): represent the activated command instance
+
+        Raises:
+            GErrorCommandNotFound: throw not found error when command name is invalid.
+        """
 
         if command_inst.command not in command_list:
             raise GErrorCommandNotFound(
                 f'Not Found[{command_inst.command}], use `compe list` to dump the full lists.')
 
-        # validate scope
-        user_scopes = get_user_scope(command_inst.user)
-        command_scope = set(command_list.get(command_inst.command)['scopes'])
+        cmd = locate(command_list[command_inst.command]['full_name'])
 
-        if user_scopes and command_scope.issubset(user_scopes):
-            raise GErrorUserNoPermission("Access Denied! You don't have the scope to access the command!")
+        # parse keywords argus
+        param, kwargs = resolve_keyword_arguments(command_inst.arguments)
 
-        else:
-            cmd = locate(command_list[command_inst.command]['full_name'])
+        cmd_results = cmd(*param, **kwargs)
 
-            # parse keywords argus
-            param, kwargs = resolve_keyword_arguments(command_inst.arguments)
-
-            cmd_results = cmd(*param, **kwargs)
-
-            TQHelper.post(payload=cmd_results or f'[{cmd.__name__}] No returned value')
+        TQHelper.post(payload=cmd_results or f'[{cmd.__name__}] No returned value')
 
 
 def push_command_in_queue(kwargs):

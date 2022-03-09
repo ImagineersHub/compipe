@@ -1,5 +1,5 @@
 import logging
-from logging.handlers import QueueHandler
+import logging.handlers
 import os.path
 import traceback
 from collections import deque

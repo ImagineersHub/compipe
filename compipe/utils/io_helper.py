@@ -91,7 +91,7 @@ def warm_up_path(path):
 
 
 def full_path(path):
-    return os.path.join(dirname(dirname(abspath(__file__))), path)
+    return os.path.join(os.getcwd(), path)
 
 
 def remove_empty_folders(path, removeRoot=True):

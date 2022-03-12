@@ -4,6 +4,7 @@ from ..response.command_result import FilePayload
 
 from .singleton import Singleton
 from .task_queue import TaskQueue
+from ..exception.validate_error import GErrorNullObject
 
 
 class TQHelper(metaclass=Singleton):
@@ -30,11 +31,14 @@ class TQHelper(metaclass=Singleton):
             > msg_status=MSGStatusCodes.default
             > thread_ts=None
         """
-        if TQHelper().current_thread_task.thread_ts:
+        if task := TQHelper().current_thread_task:
             kwargs.update({
-                'thread_ts': TQHelper().current_thread_task.thread_ts
+                'thread_ts': task.thread_ts
             })
-        TQHelper().current_thread_task.response.post(**kwargs)
+            TQHelper().current_thread_task.response.post(**kwargs)
+
+        else:
+            raise GErrorNullObject('Current task is invalid.')
 
     @classmethod
     def upload(cls, file_payload: FilePayload):

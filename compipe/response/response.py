@@ -104,10 +104,15 @@ class ConsoleChannel(ResponseChannel):
         Arguments:
             data {dict} -- Represent the payload data
         """
-        logger = logging.getLogger()  # pylint: disable=no-member
-        logger.setLevel(logging.DEBUG)
+        sys_logger = logging.getLogger()  # pylint: disable=no-member
+        sys_logger.setLevel(logging.DEBUG)
 
-        reporter = logger.error if data.msg_status == MSGStatusCodes.error else logger.debug
+        reporter = logger.debug
+
+        if data.msg_status.value == MSGStatusCodes.error.value:
+            reporter = logger.error
+        elif data.msg_status.value == MSGStatusCodes.warning.value:
+            reporter = logger.warning
 
         reporter(f'\n{str(data)}')
 
@@ -168,7 +173,7 @@ class SlackChannel(ResponseChannel):
                 'text': message_data
             })
             # dump a copy of the message to the logs when posting through slack
-            if data.msg_status == MSGStatusCodes.warning:
+            if data.msg_status.value == MSGStatusCodes.warning.value:
                 logger.warning(message_data)
             else:
                 logger.debug(message_data)

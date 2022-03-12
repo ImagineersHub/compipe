@@ -80,7 +80,7 @@ class Task():
                                        user=self.user)
         return self._response
 
-    @ property
+    @property
     def is_singleton(self):
         """ Singleton mode task, it means the command would not be triggered in
         multi-threads at the same time
@@ -115,12 +115,8 @@ class TaskQueue(queue.Queue):
         # default value would be single thread.
         self.num_workers = int(env.worker_num)
         logger.debug(f'Start task queue service: thread number [{self.num_workers}]')
-
+        self.start_workers()
         self.current_task = {}
-
-        if not env.console_mode:
-            # initialize task worker for processing the tasks through threads
-            self.start_workers()
 
     def get_thread_task_hash(self):
         return list(task.hash for task in self.current_task.values())
@@ -173,16 +169,12 @@ class TaskQueue(queue.Queue):
 
     def add_task(self, task):
         # Response greetings, ignore the cmd header when receving from compe
-        if task.user != 'compe' and TaskQueue.current_task_count != 0:
+        if TaskQueue.current_task_count != 0:
             task.thread_ts = task.response.post(
                 payload=f"Joined in task queue [{TaskQueue.current_task_count}] `{str(task)}`",
                 msg_status=MSGStatusCodes.default)
         TaskQueue.current_task_count += 1
-
-        if env.console_mode:
-            self.execute_task(task)
-        else:
-            self.put(task)
+        self.put(task)
 
     def start_workers(self):
         for _ in range(self.num_workers):
@@ -192,16 +184,19 @@ class TaskQueue(queue.Queue):
 
     def worker(self):
         while True:
-            self.execute_task(self.get())
-
-    def execute_task(self, task):
-        try:
-            task.run()
-        except:
-            logger.error(str(traceback.format_exc()))
-        finally:
-            logger.debug(f'Task\'s been Done! [{str(task)}]')
-            self.task_done()
+            task = self.get()
+            try:
+                task.run()
+            except:
+                logger.error(str(traceback.format_exc()))
+            finally:
+                logger.debug(f'Task\'s been Done! [{str(task)}]')
+                self.task_done()
+                # stop listenning task queue when trigging from consoles
+                if env.console_mode:
+                    logger.debug('Exit Task Queue : Current process '
+                                 '[Environment.console_mode]')
+                    break
 
     def get_queue_list(self):
         queue_tasks = [{ARG_COMMAND: cmd[ARG_COMMAND],

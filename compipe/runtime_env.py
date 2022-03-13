@@ -81,6 +81,11 @@ class Environment(metaclass=ThreadSafeSingleton):
                 os.environ["PATH"] += os.pathsep + path
 
     @ClassProperty
+    def get(cls, key_name: str):
+        # retrieve customized key / value from server runtime configuration dict.
+        return Environment().param.get(key_name, None)
+
+    @ClassProperty
     def console_mode(cls):
         # check the running mode
         return Environment().param.get(ARG_CONSOLE, True)
@@ -92,12 +97,12 @@ class Environment(metaclass=ThreadSafeSingleton):
 
     @ClassProperty
     def resource(cls):
-        return Environment().param.get(ARG_RESOURCE, r'S:\Shared drives\Savoia_Data')
+        return Environment().param.get(ARG_RESOURCE, None)
 
     @ClassProperty
     def dev_channel(cls):
         # set 'bot-compipe-debug' to be the default channel for posting error logs
-        return Environment().param.get(ARG_DEV_CHANNEL, 'T015BP2HUU9#G015P1L6L7J')
+        return Environment().param.get(ARG_DEV_CHANNEL, None)
 
     @ClassProperty
     def out_of_service(cls):
@@ -115,7 +120,7 @@ class Environment(metaclass=ThreadSafeSingleton):
         return Environment().param.get(ARG_SUBPROCESS_NUM, 5)
 
     @ClassProperty
-    def mars_dicom_data_root(cls):
+    def local_drive(cls):
         # check the running mode
         return Environment().param.get(ARG_MARS_DICOM_DATA_ROOT, None)
 

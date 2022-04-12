@@ -1,11 +1,12 @@
 
 import os
+
 from .utils.access import AccessHub
 from .utils.logging import logger
 from .utils.parameters import (ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL,
-                               ARG_EXECUTABLE_TOOLS, ARG_MARS_DICOM_DATA_ROOT,
-                               ARG_OUT_OF_SERVICE, ARG_QUEUE_WORKER_NUM,
-                               ARG_RESOURCE, ARG_SUBPROCESS_NUM)
+                               ARG_EXECUTABLE_TOOLS, ARG_LOCAL_DRIVE, ARG_OUT_OF_SERVICE,
+                               ARG_QUEUE_WORKER_NUM, ARG_RESOURCE,
+                               ARG_SUBPROCESS_NUM)
 from .utils.singleton import ThreadSafeSingleton
 
 
@@ -80,10 +81,9 @@ class Environment(metaclass=ThreadSafeSingleton):
                 logger.debug(f'Executable Tool [{key}] : added path [{path}] to system env.')
                 os.environ["PATH"] += os.pathsep + path
 
-    @ClassProperty
-    def get(cls, key_name: str):
+    def get(self, key: str):
         # retrieve customized key / value from server runtime configuration dict.
-        return Environment().param.get(key_name, None)
+        return self.param.get(key, None)
 
     @ClassProperty
     def console_mode(cls):
@@ -122,7 +122,7 @@ class Environment(metaclass=ThreadSafeSingleton):
     @ClassProperty
     def local_drive(cls):
         # check the running mode
-        return Environment().param.get(ARG_MARS_DICOM_DATA_ROOT, None)
+        return Environment().param.get(ARG_LOCAL_DRIVE, None)
 
     def __str__(self):
         return '{0}\n{1}\n{2}\n{0}'.format('==========ENV==========',

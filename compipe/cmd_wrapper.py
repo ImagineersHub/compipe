@@ -1,24 +1,22 @@
 import re
 import shlex
-
-from dataclasses import dataclass
 import uuid
+from typing import Callable
+from dataclasses import dataclass
+from pydoc import locate
+from timeit import default_timer as timer
+
 # register commands
 from .cmd_enroller import command_list
 from .exception.user_access_error import GErrorUserNoPermission
 from .exception.validate_error import (GErrorCommandNotFound,
                                        GErrorMissingArguments)
-from pydoc import locate
-from timeit import default_timer as timer
-
-
-from .runtime_env import Environment as env
 from .response.command_result import CommandSingleResult, MSGStatusCodes
-from .response.response import RespChannel
 # from utils.parser import *
 from .response.response import RespChannel
+from .runtime_env import Environment as env
 from .utils.decoraters_exception_handler import exception_handler
-from .utils.logging import logger, LOG_COLOR
+from .utils.logging import LOG_COLOR, logger
 from .utils.parameters import *
 from .utils.parser import EnvParser, resolve_keyword_arguments
 from .utils.singleton import Singleton
@@ -40,6 +38,10 @@ class Command():
     @property
     def command(self):
         return self.args[ARG_COMMAND]
+
+    @property
+    def message(self):
+        return self.args[ARG_MESSAGE]
 
     @property
     def arguments(self):
@@ -97,15 +99,16 @@ class CommandWrapper():
         TQHelper.post(payload=cmd_results or f'[{cmd.__name__}] No returned value')
 
 
-def push_command_in_queue(kwargs):
+def push_command_in_queue(kwargs: dict, on_success: Callable[[str, Command], None]):
 
-    if type(kwargs) is dict:
-        # Resolve arguments
-        data = resolve_arguments(**kwargs)
-        data[ARG_COMMAND_ID] = uuid.uuid4().hex
-        logger.debug(data)
-        # Append new task
-        TQHelper().tasks.add_task(Task(CommandWrapper.resolve_task, [], data))
+    # Resolve arguments
+    data = resolve_arguments(**kwargs)
+    data[ARG_COMMAND_ID] = uuid.uuid4().hex
+    # Append new task
+    TQHelper().tasks.add_task(Task(CommandWrapper.resolve_task, [], data))
+
+    if on_success:
+        on_success(Command(data))
 
 
 def get_user_scope(user):

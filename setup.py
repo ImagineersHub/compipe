@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='compipe',         # How you named your package folder (MyLib)
-    version='0.1.15',      # Start with a small number and increase it with every change you make
+    version='0.1.21',      # Start with a small number and increase it with every change you make
     license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     description='a lite version of the command wrapper for python',   # Give a short description about your library
     author='esunvoteb',                   # Type in your name

@@ -76,9 +76,8 @@ class GErrorInvalidDataFormat(ExceptionError):
     pass
 
 
-"""Dicom data validation
-=========================================================
-"""
+class GErrorOutOfRange(ExceptionError):
+    pass
 
 
 class GErrorMissingRequiredTag(ExceptionError):

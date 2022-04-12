@@ -13,7 +13,7 @@ from ..utils.logging import logger
 from ..utils.mime_types import GMimeTypes
 from ..utils.parameters import *  # pylint: disable=unused-wildcard-import
 from ..utils.parameters import ARG_CHANNEL, ARG_USER
-from .command_result import (CommandResult, CommandSingleResult, FilePayload,
+from .command_result import (CommandResult, CommandSingleResult, FilePayload, CommandMultipleResults,
                              MSGStatusCodes)
 
 ChannelType = namedtuple('ChannelType', ['key', 'name'])
@@ -75,12 +75,12 @@ class ResponseChannel(AbstractResponseChannel):
             msg_status {MSGStatusCodes} -- Represent the message status (color) 
             (default: {MSGStatusCodes.default})
         """
-        message_inst_str = 'CommandMultipleResults' if isinstance(payload, list) else 'CommandSingleResult'
-        message_inst = eval(message_inst_str)(message=message,
-                                              payload=payload,
-                                              channel=None,
-                                              thread_ts=thread_ts,
-                                              msg_status=msg_status)
+        message_inst_type = CommandMultipleResults if isinstance(payload, list) else CommandSingleResult
+        message_inst = message_inst_type(message=message,
+                                         payload=payload,
+                                         channel=None,
+                                         thread_ts=thread_ts,
+                                         msg_status=msg_status)
         return self.send(message_inst)
 
     def send(self, data: CommandResult):

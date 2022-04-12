@@ -5,6 +5,7 @@ This module has generic tuner utility functions that don't depend on any other t
 
 import functools
 import threading
+import wrapt
 
 
 class Singleton(type):
@@ -26,17 +27,13 @@ thread_lock = threading.Lock()
 
 
 def synchronized(lock):
-    """ Synchronization decorator """
-    def wrapper(f):
-        @functools.wraps(f)
-        def inner_wrapper(*args, **kw):
-            with lock:
-                return f(*args, **kw)
-        return inner_wrapper
+    @wrapt.decorator
+    def wrapper(wrapped, instance, args, kwargs):
+        with lock:
+            return wrapped(*args, **kwargs)
     return wrapper
 
 
-# class Singleton(type):
 class ThreadSafeSingleton(type):
     _instances = {}
 

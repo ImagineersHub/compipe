@@ -122,7 +122,7 @@ ARG_FRAMES = 'frames'
 ARG_FRAME = 'frame'
 
 # Mars Project
-ARG_MARS_DICOM_DATA_ROOT = 'mars_dicom_data_root'
+ARG_LOCAL_DRIVE = 'local_drive'
 ARG_SEGMENT = 'segment'
 ARG_THRESHOLD = 'threshold'
 ARG_TAGS = 'tags'

@@ -165,9 +165,6 @@ class Logger(object):
             root_logger.addHandler(Logger.capture_handler)
             root_logger.addHandler(rotate_logger)
 
-        logging.getLogger("matplotlib").setLevel(logging.WARNING)
-        logging.getLogger("PIL").setLevel(logging.WARNING)
-
 
 Logger.basicConfig(level=DEBUG, is_record=True)
 logger = Logger()

@@ -40,8 +40,12 @@ class Command():
         return self.args[ARG_COMMAND]
 
     @property
+    def command_id(self):
+        return self.args[ARG_COMMAND_ID]
+
+    @property
     def message(self):
-        return self.args[ARG_MESSAGE]
+        return ' '.join(self.arguments)
 
     @property
     def arguments(self):

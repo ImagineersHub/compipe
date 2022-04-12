@@ -1,13 +1,20 @@
 
+import logging
 import os
 
 from .utils.access import AccessHub
 from .utils.logging import logger
 from .utils.parameters import (ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL,
-                               ARG_EXECUTABLE_TOOLS, ARG_LOCAL_DRIVE, ARG_OUT_OF_SERVICE,
-                               ARG_QUEUE_WORKER_NUM, ARG_RESOURCE,
-                               ARG_SUBPROCESS_NUM)
+                               ARG_EXECUTABLE_TOOLS, ARG_LOCAL_DRIVE,
+                               ARG_OUT_OF_SERVICE, ARG_QUEUE_WORKER_NUM,
+                               ARG_RESOURCE, ARG_SUBPROCESS_NUM)
 from .utils.singleton import ThreadSafeSingleton
+
+# block tons of logs from below two modules
+logging.getLogger("matplotlib").setLevel(logging.WARNING)  # noqa
+logging.getLogger("PIL").setLevel(logging.WARNING)  # noqa
+logging.getLogger('trimesh').setLevel(logging.WARNING)  # noqa
+logging.getLogger('shapely').setLevel(logging.WARNING)  # noqa
 
 
 class ClassProperty(object):

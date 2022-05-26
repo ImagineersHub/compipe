@@ -1,12 +1,13 @@
 
 import logging
 import os
+import sys
 
 from .utils.access import AccessHub
 from .utils.logging import logger
 from .utils.parameters import (ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL,
                                ARG_EXECUTABLE_TOOLS, ARG_LOCAL_DRIVE,
-                               ARG_OUT_OF_SERVICE, ARG_QUEUE_WORKER_NUM,
+                               ARG_OUT_OF_SERVICE, ARG_PYTHON_MODULES, ARG_QUEUE_WORKER_NUM,
                                ARG_RESOURCE, ARG_SUBPROCESS_NUM)
 from .utils.singleton import ThreadSafeSingleton
 
@@ -87,6 +88,14 @@ class Environment(metaclass=ThreadSafeSingleton):
             else:
                 logger.debug(f'Executable Tool [{key}] : added path [{path}] to system env.')
                 os.environ["PATH"] += os.pathsep + path
+
+        # register external python module paths
+        for key, path in Environment().param.get(ARG_PYTHON_MODULES, {}).items():
+            if not path:
+                logger.debug(f'Python module [{key}] path is invalid!')
+            else:
+                logger.debug(f'Python module [{key}] : added path [{path}] to sys path.')
+                sys.path.append(path)
 
     def get(self, key: str):
         # retrieve customized key / value from server runtime configuration dict.

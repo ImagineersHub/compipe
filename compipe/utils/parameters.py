@@ -135,6 +135,7 @@ ARG_WINDOW_LEVEL = 'wl'
 
 # server config
 ARG_EXECUTABLE_TOOLS = 'executable_tools'
+ARG_PYTHON_MODULES = 'python_modules'
 
 # Channel Texture Maps
 ARG_AMBIENTOCCLUSION_MAP = 'aomap'

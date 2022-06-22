@@ -2,6 +2,7 @@
 import logging
 import os
 import sys
+from typing import Any
 
 from .utils.access import AccessHub
 from .utils.logging import logger
@@ -97,9 +98,9 @@ class Environment(metaclass=ThreadSafeSingleton):
                 logger.debug(f'Python module [{key}] : added path [{path}] to sys path.')
                 sys.path.append(path)
 
-    def get(self, key: str):
+    def get(self, key: str, default: Any = None):
         # retrieve customized key / value from server runtime configuration dict.
-        return self.param.get(key, None)
+        return self.param.get(key, default)
 
     @ClassProperty
     def console_mode(cls):

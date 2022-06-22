@@ -15,7 +15,7 @@ from .response.command_result import CommandSingleResult, MSGStatusCodes
 # from utils.parser import *
 from .response.response import RespChannel
 from .runtime_env import Environment as env
-from .utils.decoraters_exception_handler import exception_handler
+from .utils.decorators_exception_handler import exception_handler
 from .utils.logging import LOG_COLOR, logger
 from .utils.parameters import *
 from .utils.parser import EnvParser, resolve_keyword_arguments

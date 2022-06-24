@@ -2,7 +2,7 @@
 import logging
 import os
 import sys
-from typing import Any
+from typing import Any, Dict
 
 from .utils.access import AccessHub
 from .utils.logging import logger
@@ -29,10 +29,16 @@ class ClassProperty(object):
 
 class Environment(metaclass=ThreadSafeSingleton):
     def __init__(self, *args, console_mode=False, **kwargs):
-        self.param = {key: value.lower() if isinstance(value, str) else value for key, value in kwargs.items()}
+        # container for keeping the snapshot of the runtime variable
+        self.snapshot: Dict = {}
+
+        self.param: Dict = {key: value.lower() if isinstance(value, str) else value for key, value in kwargs.items()}
+
+        # initialize the running mode
         self.param.update({
             ARG_CONSOLE: console_mode
         })
+
         # update server config to Environment
         # local mode: Local_server_config.json
         # cloud: IBM cloud runtime env
@@ -97,6 +103,18 @@ class Environment(metaclass=ThreadSafeSingleton):
             else:
                 logger.debug(f'Python module [{key}] : added path [{path}] to sys path.')
                 sys.path.append(path)
+
+    def snapshot(self):
+        # keep a copy of the current runtime env variables
+        self.snapshot = self.param.copy()
+
+    def reset(self):
+        # reset the runtime env variables from the latest snapshot
+        if not self.snapshot:
+            logger.warning('Not found the latest snapshot of the runtime env variables!')
+            return
+
+        self.param = self.snapshot.copy()
 
     def get(self, key: str, default: Any = None):
         # retrieve customized key / value from server runtime configuration dict.

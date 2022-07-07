@@ -104,7 +104,7 @@ class Environment(metaclass=ThreadSafeSingleton):
                 logger.debug(f'Python module [{key}] : added path [{path}] to sys path.')
                 sys.path.append(path)
 
-    def snapshot(self):
+    def save_snapshot(self):
         # keep a copy of the current runtime env variables
         self.snapshot = self.param.copy()
 
@@ -119,6 +119,14 @@ class Environment(metaclass=ThreadSafeSingleton):
     def get(self, key: str, default: Any = None):
         # retrieve customized key / value from server runtime configuration dict.
         return self.param.get(key, default)
+
+    def get_value_by_path(self, keys: list, default: Any = None):
+        # retrieve the config value by specifying key chain
+        cfg = self.param
+        for key in keys:
+            cfg = cfg.get(key, None)
+
+        return cfg or default
 
     @ClassProperty
     def console_mode(cls):

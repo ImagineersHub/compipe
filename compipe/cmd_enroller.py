@@ -57,6 +57,6 @@ def cmd_enroller(module, scopes=[], alias=None,
             # is_cmd_puls = kwargs.pop('CMD_PULS', None)
 
             # execute cmd with the specify parameters
-            return self.fn(*args, **kwargs)
+            return self.fn(list(args), kwargs)
 
     return Decorator

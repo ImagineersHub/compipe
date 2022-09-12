@@ -41,7 +41,7 @@ class TQHelper(metaclass=Singleton):
 
         else:
             logger.warning('Not found task queue! Use console to response by default.')
-            ConsoleChannel.post(**kwargs)
+            ConsoleChannel().post(**kwargs)
 
     @classmethod
     def upload(cls, file_payload: FilePayload):

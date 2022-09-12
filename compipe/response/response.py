@@ -95,7 +95,7 @@ class ResponseChannel(AbstractResponseChannel):
 class ConsoleChannel(ResponseChannel):
     """Represent the console channel for running service in local (debug)."""
 
-    def __init__(self, channel, user):
+    def __init__(self, channel='', user=''):
         pass
 
     def send(self, data: CommandResult):

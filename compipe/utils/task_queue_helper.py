@@ -6,7 +6,7 @@ from .singleton import Singleton
 from .task_queue import TaskQueue
 from ..exception.validate_error import GErrorNullObject
 from .logging import logger
-from response.response import ConsoleChannel
+from ..response.response import ConsoleChannel
 
 
 class TQHelper(metaclass=Singleton):

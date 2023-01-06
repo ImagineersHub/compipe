@@ -35,7 +35,7 @@ def get_config_dir():
     return full_path('configs')
 
 
-def get_files(paths: list = [], ext_patterns=[]):
+def get_files(paths: list = [], ext_patterns=[], recursive: bool = True):
     if not isinstance(paths, list):
         raise GErrorValue('The specified value is not "list" type.')
     file_paths = []
@@ -46,10 +46,12 @@ def get_files(paths: list = [], ext_patterns=[]):
                     _, ext = os.path.splitext(item)
                     if not ext_patterns or ext.lower()[1:] in ext_patterns:
                         file_paths.append(os.path.normpath(os.path.join(root, item)))
+                if not recursive:
+                    break
     return file_paths
 
 
-def get_files_by_regex_basename(paths: list = [], reg_pattern=None):
+def get_files_by_regex_basename(paths: list = [], reg_pattern=None, recursive: bool = True):
     if not isinstance(paths, list):
         raise GErrorValue('The specified value is not "list" type.')
     if reg_pattern == None:
@@ -63,6 +65,8 @@ def get_files_by_regex_basename(paths: list = [], reg_pattern=None):
                     basename = os.path.basename(item)
                     if reg_pattern.match(basename, re.IGNORECASE):
                         file_paths.append(os.path.normpath(os.path.join(root, item)))
+                if not recursive:
+                    break
 
     return file_paths
 

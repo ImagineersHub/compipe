@@ -5,6 +5,7 @@ import re
 import shutil
 import stat
 from os.path import abspath, dirname
+from typing import List
 
 from ..exception.io_error import GErrorFileNotFound
 from ..exception.validate_error import GErrorNullObject, GErrorValue
@@ -35,7 +36,7 @@ def get_config_dir():
     return full_path('configs')
 
 
-def get_files(paths: list = [], ext_patterns=[], recursive: bool = True):
+def get_files(paths: list = [], ext_patterns=[], recursive: bool = True) -> List[str]:
     if not isinstance(paths, list):
         raise GErrorValue('The specified value is not "list" type.')
     file_paths = []
@@ -51,7 +52,7 @@ def get_files(paths: list = [], ext_patterns=[], recursive: bool = True):
     return file_paths
 
 
-def get_files_by_regex_basename(paths: list = [], reg_pattern=None, recursive: bool = True):
+def get_files_by_regex_basename(paths: list = [], reg_pattern=None, recursive: bool = True) -> List[str]:
     if not isinstance(paths, list):
         raise GErrorValue('The specified value is not "list" type.')
     if reg_pattern == None:

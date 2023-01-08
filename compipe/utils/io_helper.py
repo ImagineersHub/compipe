@@ -57,7 +57,9 @@ def get_files_by_regex_basename(paths: list = [], reg_pattern=None, recursive: b
         raise GErrorValue('The specified value is not "list" type.')
     if reg_pattern == None:
         raise GErrorNullObject('[reg_pattern] parameter does\'t have valid value!')
-
+    if isinstance(reg_pattern,str):
+        # force convert to reg pattern if it's str
+        reg_pattern = re.compile(reg_pattern)
     file_paths = []
     for path in paths:
         if os.path.exists(path):

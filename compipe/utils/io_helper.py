@@ -59,14 +59,14 @@ def get_files_by_regex_basename(paths: list = [], reg_pattern=None, recursive: b
         raise GErrorNullObject('[reg_pattern] parameter does\'t have valid value!')
     if isinstance(reg_pattern,str):
         # force convert to reg pattern if it's str
-        reg_pattern = re.compile(reg_pattern)
+        reg_pattern = re.compile(reg_pattern,re.IGNORECASE)
     file_paths = []
     for path in paths:
         if os.path.exists(path):
             for root, _, files in os.walk(path, topdown=True):
                 for item in files:
                     basename = os.path.basename(item)
-                    if reg_pattern.match(basename, re.IGNORECASE):
+                    if reg_pattern.match(basename):
                         file_paths.append(os.path.normpath(os.path.join(root, item)))
                 if not recursive:
                     break

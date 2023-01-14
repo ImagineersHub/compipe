@@ -5,7 +5,7 @@ import re
 import shutil
 import stat
 from os.path import abspath, dirname
-from typing import List
+from typing import List, Dict
 
 from ..exception.io_error import GErrorFileNotFound
 from ..exception.validate_error import GErrorNullObject, GErrorValue
@@ -74,7 +74,7 @@ def get_files_by_regex_basename(paths: list = [], reg_pattern=None, recursive: b
     return file_paths
 
 
-def convert_size(size_bytes):
+def convert_size(size_bytes) -> str:
     if size_bytes == 0:
         return "0B"
     size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
@@ -97,7 +97,7 @@ def warm_up_path(path):
         return False
 
 
-def full_path(path):
+def full_path(path) -> str:
     return os.path.normpath(os.path.join(os.getcwd(), path))
 
 
@@ -154,7 +154,7 @@ def file_writer(path, data):
         outfile.write(data)
 
 
-def json_loader(path):
+def json_loader(path) -> Dict:
     return json.loads(file_loader(path))
 
 

@@ -5,6 +5,7 @@ import re
 import shutil
 import stat
 from os.path import abspath, dirname
+from typing import List, Dict
 
 from ..exception.io_error import GErrorFileNotFound
 from ..exception.validate_error import GErrorNullObject, GErrorValue
@@ -35,7 +36,7 @@ def get_config_dir():
     return full_path('configs')
 
 
-def get_files(paths: list = [], ext_patterns=[]):
+def get_files(paths: list = [], ext_patterns=[], recursive: bool = True) -> List[str]:
     if not isinstance(paths, list):
         raise GErrorValue('The specified value is not "list" type.')
     file_paths = []
@@ -46,28 +47,34 @@ def get_files(paths: list = [], ext_patterns=[]):
                     _, ext = os.path.splitext(item)
                     if not ext_patterns or ext.lower()[1:] in ext_patterns:
                         file_paths.append(os.path.normpath(os.path.join(root, item)))
+                if not recursive:
+                    break
     return file_paths
 
 
-def get_files_by_regex_basename(paths: list = [], reg_pattern=None):
+def get_files_by_regex_basename(paths: list = [], reg_pattern=None, recursive: bool = True) -> List[str]:
     if not isinstance(paths, list):
         raise GErrorValue('The specified value is not "list" type.')
     if reg_pattern == None:
         raise GErrorNullObject('[reg_pattern] parameter does\'t have valid value!')
-
+    if isinstance(reg_pattern,str):
+        # force convert to reg pattern if it's str
+        reg_pattern = re.compile(reg_pattern,re.IGNORECASE)
     file_paths = []
     for path in paths:
         if os.path.exists(path):
             for root, _, files in os.walk(path, topdown=True):
                 for item in files:
                     basename = os.path.basename(item)
-                    if reg_pattern.match(basename, re.IGNORECASE):
+                    if reg_pattern.match(basename):
                         file_paths.append(os.path.normpath(os.path.join(root, item)))
+                if not recursive:
+                    break
 
     return file_paths
 
 
-def convert_size(size_bytes):
+def convert_size(size_bytes) -> str:
     if size_bytes == 0:
         return "0B"
     size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
@@ -90,8 +97,8 @@ def warm_up_path(path):
         return False
 
 
-def full_path(path):
-    return os.path.join(os.getcwd(), path)
+def full_path(path) -> str:
+    return os.path.normpath(os.path.join(os.getcwd(), path))
 
 
 def remove_empty_folders(path, removeRoot=True):
@@ -147,7 +154,7 @@ def file_writer(path, data):
         outfile.write(data)
 
 
-def json_loader(path):
+def json_loader(path) -> Dict:
     return json.loads(file_loader(path))
 
 

@@ -135,7 +135,7 @@ class Logger(object):
         self._raw_log(logging.error, f'\n{LOG_COLOR.FAIL}{message}{LOG_COLOR.ENDC}', exc_info)  # pylint: disable=no-member
 
     @staticmethod
-    def basicConfig(level=DEBUG, is_record=False):
+    def basicConfig(level: int = DEBUG, is_record: bool = False, log_output: str = LOG_FILE_PATH):
         """
         Apply a basic logging configuration which outputs the log to the
         console (stderr). Optionally, the minimum log level can be set, one
@@ -148,12 +148,13 @@ class Logger(object):
             datefmt='%Y-%m-%d %H:%M:%S')
 
         if is_record:
-            if not os.path.isdir(LOG_FOLDER_NAME):
-                os.mkdir(LOG_FOLDER_NAME)
+            log_dir_path = os.path.dirname(log_output)
+            if not os.path.isdir(log_dir_path):
+                os.mkdir(log_dir_path)
 
             root_logger = logging.getLogger('')  # pylint: disable=no-member
             rotate_logger = logging.handlers.TimedRotatingFileHandler(
-                LOG_FILE_PATH,
+                log_output,
                 when='midnight',
                 interval=1,
                 backupCount=60)

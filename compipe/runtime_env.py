@@ -1,12 +1,14 @@
 
 import logging
 import os
+import sys
+from typing import Any, Dict
 
 from .utils.access import AccessHub
 from .utils.logging import logger
 from .utils.parameters import (ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL,
                                ARG_EXECUTABLE_TOOLS, ARG_LOCAL_DRIVE,
-                               ARG_OUT_OF_SERVICE, ARG_QUEUE_WORKER_NUM,
+                               ARG_OUT_OF_SERVICE, ARG_PYTHON_MODULES, ARG_QUEUE_WORKER_NUM,
                                ARG_RESOURCE, ARG_SUBPROCESS_NUM)
 from .utils.singleton import ThreadSafeSingleton
 
@@ -27,10 +29,16 @@ class ClassProperty(object):
 
 class Environment(metaclass=ThreadSafeSingleton):
     def __init__(self, *args, console_mode=False, **kwargs):
-        self.param = {key: value.lower() if isinstance(value, str) else value for key, value in kwargs.items()}
+        # container for keeping the snapshot of the runtime variable
+        self.snapshot: Dict = {}
+
+        self.param: Dict = {key: value.lower() if isinstance(value, str) else value for key, value in kwargs.items()}
+
+        # initialize the running mode
         self.param.update({
             ARG_CONSOLE: console_mode
         })
+
         # update server config to Environment
         # local mode: Local_server_config.json
         # cloud: IBM cloud runtime env
@@ -88,9 +96,37 @@ class Environment(metaclass=ThreadSafeSingleton):
                 logger.debug(f'Executable Tool [{key}] : added path [{path}] to system env.')
                 os.environ["PATH"] += os.pathsep + path
 
-    def get(self, key: str):
+        # register external python module paths
+        for key, path in Environment().param.get(ARG_PYTHON_MODULES, {}).items():
+            if not path:
+                logger.debug(f'Python module [{key}] path is invalid!')
+            else:
+                logger.debug(f'Python module [{key}] : added path [{path}] to sys path.')
+                sys.path.append(path)
+
+    def save_snapshot(self):
+        # keep a copy of the current runtime env variables
+        self.snapshot = self.param.copy()
+
+    def reset(self):
+        # reset the runtime env variables from the latest snapshot
+        if not self.snapshot:
+            logger.warning('Not found the latest snapshot of the runtime env variables!')
+            return
+
+        self.param = self.snapshot.copy()
+
+    def get(self, key: str, default: Any = None):
         # retrieve customized key / value from server runtime configuration dict.
-        return self.param.get(key, None)
+        return self.param.get(key, default)
+
+    def get_value_by_path(self, keys: list, default: Any = None):
+        # retrieve the config value by specifying key chain
+        cfg = self.param
+        for key in keys:
+            cfg = cfg.get(key, None)
+
+        return cfg or default
 
     @ClassProperty
     def console_mode(cls):

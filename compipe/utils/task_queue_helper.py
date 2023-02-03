@@ -5,6 +5,8 @@ from ..response.command_result import FilePayload
 from .singleton import Singleton
 from .task_queue import TaskQueue
 from ..exception.validate_error import GErrorNullObject
+from .logging import logger
+from ..response.response import ConsoleChannel
 
 
 class TQHelper(metaclass=Singleton):
@@ -38,7 +40,8 @@ class TQHelper(metaclass=Singleton):
             TQHelper().current_thread_task.response.post(**kwargs)
 
         else:
-            raise GErrorNullObject('Current task is invalid.')
+            logger.warning('Not found task queue! Use console to response by default.')
+            ConsoleChannel().post(**kwargs)
 
     @classmethod
     def upload(cls, file_payload: FilePayload):

@@ -51,7 +51,7 @@ def _parse_parameters(value):
     if is_int(value) or is_float(value):
         return int(value) if is_int(value) else float(value)
     elif ',' in lowerStr:
-        array_values = lowerStr.split(',')
+        array_values = [element for element in lowerStr.split(',') if element]
         if isinstance(array_values[0], str):
             return array_values
         else:

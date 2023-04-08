@@ -13,10 +13,10 @@ setup(
     packages=find_packages(),
     install_requires=[            # I get to this in a second
         'requests>=2.28.2',
-        'cryptography>=36*',
+        'cryptography>=36',
         'tqdm>=4.63.0',
-        'wrapt>=1.13.*',
-        'google-api-python-client>=2.39.*'
+        'wrapt>=1.13',
+        'google-api-python-client>=2.39'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package

@@ -52,10 +52,13 @@ def _parse_parameters(value):
         return int(value) if is_int(value) else float(value)
     elif ',' in lowerStr:
         array_values = [element for element in lowerStr.split(',') if element]
-        if isinstance(array_values[0], str):
-            return array_values
+        if is_int(array_values[0]):
+            return list(map(lambda x: int(x), lowerStr.split(',')))
+        elif is_float(array_values[0]):
+            return list(map(lambda x: float(x), lowerStr.split(',')))
         else:
-            return list(map(lambda x: int(x) if is_int(x) else float(x), lowerStr.split(',')))
+            return array_values
+        
     elif os.path.isabs(value):
         # normalized the absolute file path with current system separator
         return os.path.normpath(value)

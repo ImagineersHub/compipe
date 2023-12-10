@@ -6,7 +6,8 @@ from typing import Any, Dict
 
 from .utils.access import AccessHub
 from .utils.logging import logger
-from .utils.parameters import (ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL,
+from .utils.io_helper import json_loader
+from .utils.parameters import (ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL,ARG_DEV,ARG_PROD,
                                ARG_EXECUTABLE_TOOLS, ARG_LOCAL_DRIVE,
                                ARG_OUT_OF_SERVICE, ARG_PYTHON_MODULES, ARG_QUEUE_WORKER_NUM,
                                ARG_RESOURCE, ARG_SUBPROCESS_NUM)
@@ -171,3 +172,42 @@ class Environment(metaclass=ThreadSafeSingleton):
         return '{0}\n{1}\n{2}\n{0}'.format('==========ENV==========',
                                            '|'.join(['dev_channel']),
                                            '|'.join([Environment.dev_channel]))
+
+
+def initialize_runtime_environment(params: dict,
+                                   runtime_cfg_path: str,
+                                   credential_cfg_path: str,
+                                   console_mode: bool = True):
+    params.update({
+        'platform': sys.platform
+    })
+
+    env = Environment(console_mode=console_mode, **params)
+
+    # load and apply local server runtime config
+    runtime_cfg_path = os.path.join(os.path.dirname(
+        __file__), 'tars_server_runtime_env.json')
+
+    if not os.path.exists(runtime_cfg_path):
+        raise FileNotFoundError(
+            f"Cannot find local server runtime config file at {runtime_cfg_path}")
+
+    if (server_config := json_loader(runtime_cfg_path).get(sys.platform, None)) == None:
+        raise ValueError(
+            f"Cannot find local server runtime config for platform {sys.platform}")
+
+    env.append_server_config(server_config)
+
+    if not os.path.exists(credential_cfg_path):
+        raise FileNotFoundError(
+            f"Cannot find local source credential file at {credential_cfg_path}")
+
+    if (source_cred_dict := json_loader(credential_cfg_path).get(ARG_DEV if env.debug_mode else ARG_PROD, None)) == None:
+        raise ValueError(
+            f"Cannot find local source credential for platform {sys.platform}")
+
+    # add credential to runtime environment
+    env.register_credentials(key_dict=source_cred_dict)
+
+    # keep a snapshot of the runtime environment
+    env.save_snapshot()

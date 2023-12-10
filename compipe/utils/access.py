@@ -7,9 +7,8 @@ from .logging import logger
 from .parameters import ARG_EXECUTABLE_TOOLS
 from .singleton import Singleton
 
-SEARCH_PATTERN_PREFIX = ['user-provided', 'savoia_routes']  # FOR VCAP_SERVICES
-
-CREDENTIAL_PATH = full_path(path=os.path.join('utils', 'credentials', 'keys.json'))
+CREDENTIAL_PATH = full_path(path=os.path.join(
+    'utils', 'credentials', 'keys.json'))
 
 # credential keys ==========================
 GITHUB_TOKEN_KEY = 'github-app-token'
@@ -26,7 +25,8 @@ SERVER_CONFIG = 'SERVER_CONFIG'
 # local credhash key name
 CREDHASH = 'credhash'
 
-CREDENTIAL_KEYS = [SLACK_APP_KEY, GOOGLE_APP_KEY, GITHUB_TOKEN_KEY, X_HUB_SIGNATURE]
+CREDENTIAL_KEYS = [SLACK_APP_KEY, GOOGLE_APP_KEY,
+                   GITHUB_TOKEN_KEY, X_HUB_SIGNATURE]
 
 
 class AccessHub(metaclass=Singleton):

@@ -46,7 +46,8 @@ def cmd_enroller(module, scopes=[], alias=None,
             if cmd_str not in command_list:
                 command_name = alias if alias else cmd_str
                 if command_name in command_list:
-                    raise ValueError(f"Found duplicated command name: {command_name}")
+                    raise ValueError(
+                        f"Found duplicated command name: {command_name}")
                 command_list[alias if alias else cmd_str] = {
                     'scopes': scopes,
                     'singleton': singleton,

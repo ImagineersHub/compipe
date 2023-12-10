@@ -58,7 +58,7 @@ def _parse_parameters(value):
             return list(map(lambda x: float(x), lowerStr.split(',')))
         else:
             return array_values
-        
+
     elif os.path.isabs(value):
         # normalized the absolute file path with current system separator
         return os.path.normpath(value)
@@ -87,7 +87,8 @@ class EnvParser(metaclass=Singleton):
         if not parser:
             parser = argparse.ArgumentParser()
 
-        parser.add_argument('-v', '--version', help='output the version number')
+        parser.add_argument('-v', '--version',
+                            help='output the version number')
 
         parser.add_argument(ARG_COMMAND,
                             type=str,
@@ -113,14 +114,14 @@ class EnvParser(metaclass=Singleton):
             '-sp',
             '--{}'.format(ARG_SPACE),
             type=str,
-            default='savoia',
+            default='default',
             help='represent the space name for current service: e.g. hkg, lax')
 
         parser.add_argument(
             '-res',
             '--{}'.format(ARG_RESOURCE),
             type=str,
-            default=r'S:\Shared drives\Savoia_Data',
+            default='',
             help='represent the share drive letter.')
 
         parser.add_argument(

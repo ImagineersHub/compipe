@@ -8,6 +8,8 @@ ARG_GUID = 'guid'
 ARG_ID = 'id'
 ARG_CHANGELIST = 'cl'
 ARG_DEV_CHANNEL = 'dev_channel'
+ARG_DEV = 'dev'
+ARG_PROD = 'prod'
 ARG_QUEUE_WORKER_NUMBER = 'worker_number'
 ARG_CALLBACK = 'callback'
 ARG_PAYLOAD = 'payload'
@@ -113,7 +115,6 @@ ARG_RESAMPLE = 'resample'
 ARG_LIMITS = 'limits'
 
 # space names
-ARG_SPACE_SAVOIA = 'savoia'
 ARG_SPACE_HYPER = 'hyper'
 ARG_SPACE_MARS = 'mars'
 

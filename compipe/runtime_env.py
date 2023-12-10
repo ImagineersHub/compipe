@@ -7,7 +7,7 @@ from typing import Any, Dict
 from .utils.access import AccessHub
 from .utils.logging import logger
 from .utils.io_helper import json_loader
-from .utils.parameters import (ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL,ARG_DEV,ARG_PROD,
+from .utils.parameters import (ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL, ARG_DEV, ARG_PROD,
                                ARG_EXECUTABLE_TOOLS, ARG_LOCAL_DRIVE,
                                ARG_OUT_OF_SERVICE, ARG_PYTHON_MODULES, ARG_QUEUE_WORKER_NUM,
                                ARG_RESOURCE, ARG_SUBPROCESS_NUM)
@@ -33,7 +33,8 @@ class Environment(metaclass=ThreadSafeSingleton):
         # container for keeping the snapshot of the runtime variable
         self.snapshot: Dict = {}
 
-        self.param: Dict = {key: value.lower() if isinstance(value, str) else value for key, value in kwargs.items()}
+        self.param: Dict = {key: value.lower() if isinstance(
+            value, str) else value for key, value in kwargs.items()}
 
         # initialize the running mode
         self.param.update({
@@ -94,7 +95,8 @@ class Environment(metaclass=ThreadSafeSingleton):
             if not path:
                 logger.debug(f'Executable Tool [{key}] path is invalid!')
             else:
-                logger.debug(f'Executable Tool [{key}] : added path [{path}] to system env.')
+                logger.debug(
+                    f'Executable Tool [{key}] : added path [{path}] to system env.')
                 os.environ["PATH"] += os.pathsep + path
 
         # register external python module paths
@@ -102,7 +104,8 @@ class Environment(metaclass=ThreadSafeSingleton):
             if not path:
                 logger.debug(f'Python module [{key}] path is invalid!')
             else:
-                logger.debug(f'Python module [{key}] : added path [{path}] to sys path.')
+                logger.debug(
+                    f'Python module [{key}] : added path [{path}] to sys path.')
                 sys.path.append(path)
 
     def save_snapshot(self):
@@ -112,7 +115,8 @@ class Environment(metaclass=ThreadSafeSingleton):
     def reset(self):
         # reset the runtime env variables from the latest snapshot
         if not self.snapshot:
-            logger.warning('Not found the latest snapshot of the runtime env variables!')
+            logger.warning(
+                'Not found the latest snapshot of the runtime env variables!')
             return
 
         self.param = self.snapshot.copy()
@@ -183,10 +187,6 @@ def initialize_runtime_environment(params: dict,
     })
 
     env = Environment(console_mode=console_mode, **params)
-
-    # load and apply local server runtime config
-    runtime_cfg_path = os.path.join(os.path.dirname(
-        __file__), 'tars_server_runtime_env.json')
 
     if not os.path.exists(runtime_cfg_path):
         raise FileNotFoundError(

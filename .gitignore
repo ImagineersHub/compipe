@@ -130,4 +130,3 @@ dmypy.json
 
 # Development: ignore local dev scripts
 dev_*
-upload.bat

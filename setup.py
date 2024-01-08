@@ -7,6 +7,8 @@ setup(
     license='MIT',
     # Give a short description about your library
     description='a lite version of the command wrapper for python',
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     author='esunvoteb',                   # Type in your name
     author_email='esun@voteb.com',      # Type in your E-Mail
     # Provide either the link to your github or to your website

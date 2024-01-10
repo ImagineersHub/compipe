@@ -5,3 +5,4 @@ wrapt==1.13.3
 google-api-python-client==2.39.0
 twine
 wheel
+colorlog

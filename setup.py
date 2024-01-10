@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='compipe',         # How you named your package folder (MyLib)
-    version='0.2.6',      # Start with a small number and increase it with every change you make
+    version='0.2.7',      # Start with a small number and increase it with every change you make
     # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     license='MIT',
     # Give a short description about your library
@@ -22,7 +22,8 @@ setup(
         'cryptography>=36',
         'tqdm>=4.63.0',
         'wrapt>=1.13',
-        'google-api-python-client>=2.39'
+        'google-api-python-client>=2.39',
+        'colorlog'
     ],
     classifiers=[
         # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package

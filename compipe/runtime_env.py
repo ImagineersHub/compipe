@@ -180,7 +180,7 @@ class Environment(metaclass=ThreadSafeSingleton):
 
 def initialize_runtime_environment(params: dict,
                                    runtime_cfg_path: str,
-                                   credential_cfg_path: str,
+                                   credential_cfg_path: str = None,
                                    console_mode: bool = True):
     params.update({
         'platform': sys.platform
@@ -198,16 +198,16 @@ def initialize_runtime_environment(params: dict,
 
     env.append_server_config(server_config)
 
-    if not os.path.exists(credential_cfg_path):
-        raise FileNotFoundError(
-            f"Cannot find local source credential file at {credential_cfg_path}")
+    if not credential_cfg_path:
+        logger.warning(
+            f"Skip loading credential config file.")
+    else:
+        if (source_cred_dict := json_loader(credential_cfg_path).get(ARG_DEV if env.debug_mode else ARG_PROD, None)) == None:
+            raise ValueError(
+                f"Cannot find local source credential for platform {sys.platform}")
 
-    if (source_cred_dict := json_loader(credential_cfg_path).get(ARG_DEV if env.debug_mode else ARG_PROD, None)) == None:
-        raise ValueError(
-            f"Cannot find local source credential for platform {sys.platform}")
-
-    # add credential to runtime environment
-    env.register_credentials(key_dict=source_cred_dict)
+        # add credential to runtime environment
+        env.register_credentials(key_dict=source_cred_dict)
 
     # keep a snapshot of the runtime environment
     env.save_snapshot()

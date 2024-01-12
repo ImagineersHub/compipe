@@ -16,7 +16,7 @@ from .response.command_result import CommandSingleResult, MSGStatusCodes
 from .response.response import RespChannel
 from .runtime_env import Environment as env
 from .utils.decorators_exception_handler import exception_handler
-from .utils.logging import LOG_COLOR, logger
+from .utils.logging import logger
 from .utils.parameters import *
 from .utils.parser import EnvParser, resolve_keyword_arguments
 from .utils.singleton import Singleton
@@ -62,13 +62,13 @@ class CommandWrapper():
     def resolve_task(*args, **kwargs):
 
         cmd = Command(kwargs)
-        logger.debug(f'================ Start [{cmd.command}]', color=LOG_COLOR.OKBLUE)
+        logger.debug(f'================ Start [{cmd.command}]')
         # calculate time elapsed
         start_time = timer()
         CommandWrapper().run_command(cmd)
-        logger.debug(f'elapsed time: {timer() - start_time}', color=LOG_COLOR.WARNING)
+        logger.debug(f'elapsed time: {timer() - start_time}')
 
-        logger.debug(f'================== End [{cmd.command}]', color=LOG_COLOR.OKBLUE)
+        logger.debug(f'================== End [{cmd.command}]')
 
     def _verify_build_status(self):
         """TODO: Implement build status checking
@@ -100,7 +100,8 @@ class CommandWrapper():
 
         cmd_results = cmd(*param, **kwargs)
 
-        TQHelper.post(payload=cmd_results or f'[{cmd.__name__}] No returned value')
+        TQHelper.post(
+            payload=cmd_results or f'[{cmd.__name__}] No returned value')
 
 
 def push_command_in_queue(kwargs: dict, on_success: Callable[[str, Command], None]):
@@ -176,6 +177,7 @@ def create_command_payload(args):
             msg_status=MSGStatusCodes.warning)
     else:
         args[ARG_COMMAND] = args[ARG_COMMAND].replace(u'\xa0', u' ')
-        args[ARG_COMMAND] = list(map(str.strip, shlex.split(args[ARG_COMMAND])))
+        args[ARG_COMMAND] = list(
+            map(str.strip, shlex.split(args[ARG_COMMAND])))
 
         push_command_in_queue(args)

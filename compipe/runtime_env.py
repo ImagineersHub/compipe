@@ -192,11 +192,18 @@ def initialize_runtime_environment(params: dict,
         raise FileNotFoundError(
             f"Cannot find local server runtime config file at {runtime_cfg_path}")
 
-    if (server_config := json_loader(runtime_cfg_path).get(sys.platform, None)) == None:
+    env_config = json_loader(runtime_cfg_path)
+    base_config = env_config.get("base", {})
+
+    if (platform_config := env_config.get(sys.platform, None)) == None:
         raise ValueError(
             f"Cannot find local server runtime config for platform {sys.platform}")
 
-    env.append_server_config(server_config)
+    base_config.update(platform_config)
+
+    print(base_config)
+
+    env.append_server_config(base_config)
 
     if not credential_cfg_path:
         logger.warning(

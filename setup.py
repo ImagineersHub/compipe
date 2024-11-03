@@ -2,7 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='compipe',         # How you named your package folder (MyLib)
-    version='0.2.9',      # Start with a small number and increase it with every change you make
+    # Start with a small number and increase it with every change you make
+    version='0.2.10',
     # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     license='MIT',
     # Give a short description about your library

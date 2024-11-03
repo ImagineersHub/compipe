@@ -113,6 +113,7 @@ ARG_CROP = 'crop'
 ARG_DECIMATE = 'decimate'
 ARG_RESAMPLE = 'resample'
 ARG_LIMITS = 'limits'
+ARG_BASE = 'base'
 
 # space names
 ARG_SPACE_HYPER = 'hyper'

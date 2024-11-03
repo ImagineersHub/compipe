@@ -10,7 +10,7 @@ from .utils.io_helper import json_loader
 from .utils.parameters import (ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL, ARG_DEV, ARG_PROD,
                                ARG_EXECUTABLE_TOOLS, ARG_LOCAL_DRIVE,
                                ARG_OUT_OF_SERVICE, ARG_PYTHON_MODULES, ARG_QUEUE_WORKER_NUM,
-                               ARG_RESOURCE, ARG_SUBPROCESS_NUM)
+                               ARG_RESOURCE, ARG_SUBPROCESS_NUM, ARG_BASE)
 from .utils.singleton import ThreadSafeSingleton
 
 # block tons of logs from below two modules
@@ -193,15 +193,14 @@ def initialize_runtime_environment(params: dict,
             f"Cannot find local server runtime config file at {runtime_cfg_path}")
 
     env_config = json_loader(runtime_cfg_path)
-    base_config = env_config.get("base", {})
+
+    base_config = env_config.get(ARG_BASE, {})
 
     if (platform_config := env_config.get(sys.platform, None)) == None:
         raise ValueError(
             f"Cannot find local server runtime config for platform {sys.platform}")
 
     base_config.update(platform_config)
-
-    print(base_config)
 
     env.append_server_config(base_config)
 

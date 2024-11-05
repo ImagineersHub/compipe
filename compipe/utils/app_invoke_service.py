@@ -1,11 +1,13 @@
 # launch windows program from docker container
 import requests
 import json
-from typing import List
-from pydantic import BaseModel, Field, Optional
-from utils.parameters import ARG_APP_INVOKE
+from typing import List, Optional
+from pydantic import BaseModel, Field
+from .parameters import ARG_APP_INVOKE
 from compipe.runtime_env import Environment as env
-from utils.singleton import Singleton
+from .singleton import Singleton
+from datetime import datetime, timedelta
+from .logging import logger
 
 
 class AppInvokeDefinition(BaseModel):
@@ -74,6 +76,34 @@ class ProgramExecutionRequest(BaseModel):
     )
 
 
+class ProgramExecutionResult(BaseModel):
+    success: bool
+    exit_code: int = Field(alias='exitCode')
+    standard_output: str = Field(default="", alias='standardOutput')
+    standard_error: str = Field(default="", alias='standardError')
+    start_time: datetime = Field(alias='startTime')
+    end_time: datetime = Field(alias='endTime')
+    timed_out: bool = Field(alias='timedOut')
+
+    @property
+    def duration(self) -> timedelta:
+        return self.end_time - self.start_time
+
+    class Config:
+        from_attributes = True  # Allows parsing from ORM objects
+        json_schema_extra = {
+            "example": {
+                "success": True,
+                "exit_code": 0,
+                "standard_output": "Program output",
+                "standard_error": "",
+                "start_time": "2024-01-01T10:00:00",
+                "end_time": "2024-01-01T10:00:05",
+                "timed_out": False
+            }
+        }
+
+
 class AppInvokeService(metaclass=Singleton):
 
     def __init__(self):
@@ -90,7 +120,7 @@ class AppInvokeService(metaclass=Singleton):
             self,
             url: str,
             request: ProgramExecutionRequest,
-    ):
+    ) -> ProgramExecutionResult:
         """
         Send a POST request to a REST API endpoint.
         """
@@ -102,18 +132,31 @@ class AppInvokeService(metaclass=Singleton):
 
         try:
             # Send POST request
+            print(request.json())
             response = requests.post(
                 url=url,
-                data=request.json(),
+                json=request.dict(),  # Use json parameter to serialize the dictionary
                 headers=headers,
-                timeout=30  # Timeout after 30 seconds
+                timeout=300  # Timeout after 300 seconds
             )
 
             # Raise an exception for bad status codes
-            response.raise_for_status()
+            response_json = json.loads(response.text)
 
-            # Return response if successful
-            return response
+            if response.status_code != 200:
+                logger.error(response_json.get("error"))
+                response.raise_for_status()
+
+            response_content = ProgramExecutionResult.parse_obj(
+                response_json.get("data"))
+            if not response_content.success:
+                logger.error(response_content.standard_error)
+                raise Exception(response_content.standard_error)
+
+            # TODO: reformat complex output logs
+            logger.debug(response_content.standard_output)
+
+            return response_content.standard_output
 
         except requests.exceptions.RequestException as e:
             print(f"Error making POST request: {str(e)}")
@@ -123,20 +166,26 @@ class AppInvokeService(metaclass=Singleton):
             print(f"Error encoding JSON data: {str(e)}")
             raise
 
-    def execute(self,
-                request: ProgramExecutionRequest):
+    def execute(
+        self,
+        request: ProgramExecutionRequest
+    ) -> ProgramExecutionResult:
 
-        self.call(request=request,
-                  url=self.definition.execute_url)
+        return self.call(request=request,
+                         url=self.definition.execute_url)
 
-    def launch(self,
-               request: ProgramExecutionRequest):
+    def launch(
+        self,
+        request: ProgramExecutionRequest
+    ) -> ProgramExecutionResult:
 
-        self.call(request=request,
-                  url=self.definition.launch_url)
+        return self.call(request=request,
+                         url=self.definition.launch_url)
 
-    def kill(self,
-             request: ProgramExecutionRequest):
+    def kill(
+        self,
+        request: ProgramExecutionRequest
+    ) -> ProgramExecutionResult:
 
-        self.call(request=request,
-                  url=self.definition.kill_url)
+        return self.call(request=request,
+                         url=self.definition.kill_url)

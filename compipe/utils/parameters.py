@@ -114,6 +114,7 @@ ARG_DECIMATE = 'decimate'
 ARG_RESAMPLE = 'resample'
 ARG_LIMITS = 'limits'
 ARG_BASE = 'base'
+ARG_APP_INVOKE = 'app_invoke'
 
 # space names
 ARG_SPACE_HYPER = 'hyper'

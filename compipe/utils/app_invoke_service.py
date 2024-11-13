@@ -132,7 +132,6 @@ class AppInvokeService(metaclass=Singleton):
 
         try:
             # Send POST request
-            print(request.json())
             response = requests.post(
                 url=url,
                 json=request.dict(),  # Use json parameter to serialize the dictionary

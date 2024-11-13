@@ -47,9 +47,7 @@ def setup_logger(logger_name='compipe', log_level=logging.DEBUG, keep_logs=False
     if keep_logs:
         try:
             # Ensure log folder exists
-            base_dir = os.path.dirname(os.path.abspath(
-                sys.modules['__main__'].__file__))
-            log_folder = os.path.join(base_dir, 'logs')
+            log_folder = os.path.join(os.getcwd(), 'logs')
 
             # Create a file handler that logs messages to a file, rotating daily
             log_file_path = os.path.join(log_folder, logger_name + '.log')
@@ -68,4 +66,4 @@ def setup_logger(logger_name='compipe', log_level=logging.DEBUG, keep_logs=False
 
 
 # Example usage in any script
-logger = setup_logger()
+logger = setup_logger(keep_logs=True)

@@ -120,6 +120,7 @@ class AppInvokeService(metaclass=Singleton):
             self,
             url: str,
             request: ProgramExecutionRequest,
+            timeout: Optional[int] = None
     ) -> ProgramExecutionResult:
         """
         Send a POST request to a REST API endpoint.
@@ -136,7 +137,7 @@ class AppInvokeService(metaclass=Singleton):
                 url=url,
                 json=request.dict(),  # Use json parameter to serialize the dictionary
                 headers=headers,
-                timeout=300  # Timeout after 300 seconds
+                timeout=timeout  # seconds, no timeout by default
             )
 
             # Raise an exception for bad status codes
@@ -167,11 +168,13 @@ class AppInvokeService(metaclass=Singleton):
 
     def execute(
         self,
-        request: ProgramExecutionRequest
+        request: ProgramExecutionRequest,
+        timeout: Optional[int] = None
     ) -> ProgramExecutionResult:
 
         return self.call(request=request,
-                         url=self.definition.execute_url)
+                         url=self.definition.execute_url,
+                         timeout=timeout)
 
     def launch(
         self,

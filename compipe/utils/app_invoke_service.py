@@ -8,6 +8,7 @@ from compipe.runtime_env import Environment as env
 from .singleton import Singleton
 from datetime import datetime, timedelta
 from .logging import logger
+from typing import Dict
 
 
 class AppInvokeDefinition(BaseModel):
@@ -63,6 +64,11 @@ class ProgramExecutionRequest(BaseModel):
     WorkingDirectory: Optional[str] = Field(
         default=None,
         description="The working directory for the program execution"
+    )
+
+    Payload: Dict = Field(
+        default_factory=dict,
+        description="Additional data to be passed to the program"
     )
 
     TimeoutSeconds: Optional[int] = Field(

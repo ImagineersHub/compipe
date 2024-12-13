@@ -1,26 +1,31 @@
-
 import logging
 import os
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from .utils.access import AccessHub
 from .utils.logging import logger
 from .utils.io_helper import json_loader
-from .utils.parameters import (ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL, ARG_DEV, ARG_PROD,
-                               ARG_EXECUTABLE_TOOLS, ARG_LOCAL_DRIVE,
-                               ARG_OUT_OF_SERVICE, ARG_PYTHON_MODULES, ARG_QUEUE_WORKER_NUM,
-                               ARG_RESOURCE, ARG_SUBPROCESS_NUM, ARG_BASE)
+from .utils.parameters import (
+    ARG_CONSOLE, ARG_DEBUG, ARG_DEV_CHANNEL, ARG_DEV, ARG_PROD,
+    ARG_EXECUTABLE_TOOLS, ARG_LOCAL_DRIVE, ARG_OUT_OF_SERVICE,
+    ARG_PYTHON_MODULES, ARG_QUEUE_WORKER_NUM, ARG_RESOURCE,
+    ARG_SUBPROCESS_NUM, ARG_BASE
+)
 from .utils.singleton import ThreadSafeSingleton
 
-# block tons of logs from below two modules
+# Restrict log levels for less relevant modules
 logging.getLogger("matplotlib").setLevel(logging.WARNING)  # noqa
 logging.getLogger("PIL").setLevel(logging.WARNING)  # noqa
 logging.getLogger('trimesh').setLevel(logging.WARNING)  # noqa
 logging.getLogger('shapely').setLevel(logging.WARNING)  # noqa
 
 
-class ClassProperty(object):
+class ClassProperty:
+    """
+    A descriptor that emulates @property behavior at the class level.
+    Allows accessing class-level attributes as if they were properties.
+    """
     def __init__(self, getter):
         self.getter = getter
 
@@ -29,32 +34,48 @@ class ClassProperty(object):
 
 
 class Environment(metaclass=ThreadSafeSingleton):
-    def __init__(self, *args, console_mode=False, **kwargs):
-        # container for keeping the snapshot of the runtime variable
-        self.snapshot: Dict = {}
+    """
+    A singleton environment class for managing runtime parameters and configurations.
+    Provides functionality to:
+    - Initialize runtime parameters.
+    - Load and merge platform-specific server configurations.
+    - Manage runtime snapshots (to revert to previous states).
+    - Dynamically update system and Python paths based on configuration.
+    """
 
-        self.param: Dict = {key: value.lower() if isinstance(
-            value, str) else value for key, value in kwargs.items()}
+    def __init__(self, *args, console_mode: bool = False, **kwargs):
+        # Holds a copy of runtime parameters for potential restoration
+        self.snapshot: Dict[str, Any] = {}
 
-        # initialize the running mode
-        self.param.update({
-            ARG_CONSOLE: console_mode
-        })
+        # Normalize string parameters to lowercase
+        self.param: Dict[str, Any] = {
+            key: (value.lower() if isinstance(value, str) else value)
+            for key, value in kwargs.items()
+        }
 
-        # update server config to Environment
-        # local mode: Local_server_config.json
-        # cloud: IBM cloud runtime env
+        # Update parameters with console mode setting
+        self.param[ARG_CONSOLE] = console_mode
+
+        # The following line was commented out in original code:
         # self.update(AccessHub().server_configs)
 
     @classmethod
-    def register_credentials(cls, key_dict: dict = {}):
+    def register_credentials(cls, key_dict: Dict[str, Any] = {}):
+        """
+        Register or update credentials from the given dictionary.
+        This typically merges external credentials into the global AccessHub key store.
+        """
         AccessHub().keys.update(key_dict)
 
     @classmethod
-    def append_server_config(cls, payload: dict = {}):
-        """add customized server config. It could represent some simple parameters and application paths. 
+    def append_server_config(cls, payload: Dict[str, Any] = {}):
+        """
+        Add or update server configuration parameters into the Environment.
+        
+        The payload typically contains platform-specific configuration overrides
+        (e.g., number of workers, executable tool paths, etc.).
 
-        Payload Example:
+        Example Payload:
         {
             "win32": {
                 "queue_worker_num": 1,
@@ -73,147 +94,188 @@ class Environment(metaclass=ThreadSafeSingleton):
                     "swinir_denoising_50": "D:\\Trained_Models\\SwinIR\\Model\\004_grayDN_DFWB_s128w8_SwinIR-M_noise50.pth"
                 },
                 "mars_dicom_data_root": "G:\\Shared drives"
-            },
-            "linux": {
-                "queue_worker_num": 4,
-                "subprocess_num": 5,
-                "dev_channel": "T015BP2HUU9#G015P1L6L7J",
-                "oos": false,
-                "debug": false,
-                "executable_tools": {
-                    "unreal_engine": "",
-                    "blender": ""
-                },
-                "mars_dicom_data_root": "/gd"
             }
         }
         """
         Environment().param.update(payload)
 
-        # add executable application path to sys environment
+        # Update system PATH with executable tool paths
         for key, path in Environment().param.get(ARG_EXECUTABLE_TOOLS, {}).items():
             if not path:
                 logger.debug(f'Executable Tool [{key}] path is invalid!')
             else:
                 logger.debug(
-                    f'Executable Tool [{key}] : added path [{path}] to system env.')
+                    f'Executable Tool [{key}]: Adding path [{path}] to system PATH.'
+                )
                 os.environ["PATH"] += os.pathsep + path
 
-        # register external python module paths
+        # Update Python sys.path with external Python module paths
         for key, path in Environment().param.get(ARG_PYTHON_MODULES, {}).items():
             if not path:
                 logger.debug(f'Python module [{key}] path is invalid!')
             else:
                 logger.debug(
-                    f'Python module [{key}] : added path [{path}] to sys path.')
+                    f'Python module [{key}]: Adding path [{path}] to sys.path.'
+                )
                 sys.path.append(path)
 
     def save_snapshot(self):
-        # keep a copy of the current runtime env variables
+        """
+        Saves a snapshot of the current environment parameters.
+        This can be used later to reset the environment to this exact state.
+        """
         self.snapshot = self.param.copy()
 
     def reset(self):
-        # reset the runtime env variables from the latest snapshot
+        """
+        Resets the environment parameters to the most recently saved snapshot.
+        If no snapshot has been saved, logs a warning and does nothing.
+        """
         if not self.snapshot:
-            logger.warning(
-                'Not found the latest snapshot of the runtime env variables!')
+            logger.warning('No snapshot of the runtime environment found!')
             return
-
         self.param = self.snapshot.copy()
 
-    def get(self, key: str, default: Any = None):
-        # retrieve customized key / value from server runtime configuration dict.
+    def get(self, key: str, default: Any = None) -> Any:
+        """
+        Retrieves a parameter by key from the environment parameters.
+        Returns the given default if the key is not found.
+        """
         return self.param.get(key, default)
 
-    def get_value_by_path(self, keys: list, default: Any = None):
-        # retrieve the config value by specifying key chain
+    def get_value_by_path(self, keys: list, default: Any = None) -> Any:
+        """
+        Retrieves a nested configuration value by a chain of keys.
+
+        Example:
+        keys = ['executable_tools', 'blender'] 
+        returns the value of Environment().param['executable_tools']['blender'] if it exists.
+
+        If any key in the chain is missing, returns the provided default.
+        """
         cfg = self.param
         for key in keys:
             cfg = cfg.get(key, None)
-
+            if cfg is None:
+                return default
         return cfg or default
 
     @ClassProperty
-    def console_mode(cls):
-        # check the running mode
+    def console_mode(cls) -> bool:
+        """Indicates if the environment is running in console mode."""
         return Environment().param.get(ARG_CONSOLE, True)
 
     @ClassProperty
-    def debug_mode(cls):
-        # check the running mode
+    def debug_mode(cls) -> bool:
+        """Indicates if the environment is running in debug mode."""
         return Environment().param.get(ARG_DEBUG, False)
 
     @ClassProperty
-    def resource(cls):
+    def resource(cls) -> Any:
+        """Returns the configured resource (e.g., path to resources) if any."""
         return Environment().param.get(ARG_RESOURCE, None)
 
     @ClassProperty
-    def dev_channel(cls):
-        # set 'bot-compipe-debug' to be the default channel for posting error logs
+    def dev_channel(cls) -> str:
+        """Returns the Slack/communication channel for development messages."""
         return Environment().param.get(ARG_DEV_CHANNEL, None)
 
     @ClassProperty
-    def out_of_service(cls):
-        # set hkg to be the default space for PROTP
+    def out_of_service(cls) -> bool:
+        """Indicates if the environment is set to 'out of service' mode."""
         return Environment().param.get(ARG_OUT_OF_SERVICE, False)
 
     @ClassProperty
-    def worker_num(cls):
-        # check the running mode
+    def worker_num(cls) -> int:
+        """Returns the number of queue workers configured."""
         return Environment().param.get(ARG_QUEUE_WORKER_NUM, 1)
 
     @ClassProperty
-    def subprocess_num(cls):
-        # check the running mode
+    def subprocess_num(cls) -> int:
+        """Returns the number of subprocesses configured."""
         return Environment().param.get(ARG_SUBPROCESS_NUM, 5)
 
     @ClassProperty
-    def local_drive(cls):
-        # check the running mode
+    def local_drive(cls) -> str:
+        """Returns the local drive or filesystem path configured."""
         return Environment().param.get(ARG_LOCAL_DRIVE, None)
 
-    def __str__(self):
-        return '{0}\n{1}\n{2}\n{0}'.format('==========ENV==========',
-                                           '|'.join(['dev_channel']),
-                                           '|'.join([Environment.dev_channel]))
+    def __str__(self) -> str:
+        """
+        Returns a human-readable string representation of the environment.
+        """
+        return (
+            '==========ENV==========\n'
+            f'{ "|".join(["dev_channel"]) }\n'
+            f'{ "|".join([Environment.dev_channel]) }\n'
+            '==========ENV=========='
+        )
 
 
-def initialize_runtime_environment(params: dict,
-                                   runtime_cfg_path: str,
-                                   credential_cfg_path: str = None,
-                                   console_mode: bool = True):
-    params.update({
-        'platform': sys.platform
-    })
+def initialize_runtime_environment(
+    params: Dict[str, Any],
+    runtime_cfg_path: str,
+    credential_cfg: Union[str, Dict[str, Any]] = None,
+    console_mode: bool = True
+):
+    """
+    Initialize the runtime environment with the given parameters and configuration files.
 
+    Args:
+        params (dict): Base parameters to initialize the environment.
+        runtime_cfg_path (str): Path to the local server runtime configuration file.
+        credential_cfg (str|dict): Path to a credential config file or a dict of credentials.
+        console_mode (bool): Whether to run in console mode.
+
+    Raises:
+        FileNotFoundError: If the runtime configuration file or credential file is not found.
+        ValueError: If configuration for the current platform cannot be found.
+    """
+
+    # Include the current platform in parameters
+    params.update({'platform': sys.platform})
+
+    # Create or retrieve the singleton Environment instance
     env = Environment(console_mode=console_mode, **params)
 
+    # Verify runtime configuration file exists
     if not os.path.exists(runtime_cfg_path):
         raise FileNotFoundError(
-            f"Cannot find local server runtime config file at {runtime_cfg_path}")
+            f"Local server runtime config file not found at {runtime_cfg_path}"
+        )
 
+    # Load environment configuration
     env_config = json_loader(runtime_cfg_path)
-
     base_config = env_config.get(ARG_BASE, {})
 
-    if (platform_config := env_config.get(sys.platform, None)) == None:
+    # Retrieve platform-specific configuration, or raise error if not found
+    platform_config = env_config.get(sys.platform, None)
+    if platform_config is None:
         raise ValueError(
-            f"Cannot find local server runtime config for platform {sys.platform}")
+            f"No local server runtime config found for platform {sys.platform}"
+        )
 
+    # Merge platform config into base config
     base_config.update(platform_config)
 
+    # Apply the combined configuration to the environment
     env.append_server_config(base_config)
 
-    if not credential_cfg_path:
-        logger.warning(
-            f"Skip loading credential config file.")
+    # Handle credential configuration
+    if not credential_cfg:
+        logger.warning("Skipping credential config loading.")
     else:
-        if (source_cred_dict := json_loader(credential_cfg_path).get(ARG_DEV if env.debug_mode else ARG_PROD, None)) == None:
-            raise ValueError(
-                f"Cannot find local source credential for platform {sys.platform}")
+        # If credential_cfg is a path, load it from file
+        if isinstance(credential_cfg, str):
+            if not os.path.exists(credential_cfg):
+                raise FileNotFoundError(
+                    f"Credential file not found at {credential_cfg}"
+                )
+            credential_cfg = json_loader(credential_cfg)
 
-        # add credential to runtime environment
-        env.register_credentials(key_dict=source_cred_dict)
+        # Select credentials based on debug or production mode
+        env_credentials = credential_cfg.get(ARG_DEV if env.debug_mode else ARG_PROD, {})
+        env.register_credentials(key_dict=env_credentials)
 
-    # keep a snapshot of the runtime environment
+    # Save the current state of environment variables as a snapshot
     env.save_snapshot()

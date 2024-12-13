@@ -49,6 +49,10 @@ def setup_logger(logger_name='compipe', log_level=logging.DEBUG, keep_logs=False
             # Ensure log folder exists
             log_folder = os.path.join(os.getcwd(), 'logs')
 
+            # create folder if it does not exist
+            if not os.path.exists(log_folder):
+                os.makedirs(log_folder)
+
             # Create a file handler that logs messages to a file, rotating daily
             log_file_path = os.path.join(log_folder, logger_name + '.log')
             file_handler = TimedRotatingFileHandler(
